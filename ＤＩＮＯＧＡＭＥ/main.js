@@ -35,7 +35,7 @@ var cactusmore = [];
 var jumptimer = 0;
 var animation;
 
-var score = 0; // 현재 게임 판의 점수
+var score = 0; 
 var scoreInterval; 
 
 function frames() {
@@ -50,7 +50,6 @@ function frames() {
     }
 
     cactusmore.forEach((a, i, o) => {
-        // x좌표가 0미만이면 제거
         if (a.x + a.width < 0) {
             o.splice(i, 1)
         }
@@ -94,7 +93,6 @@ function collision(dino, cactus) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         cancelAnimationFrame(animation);
 
-        // 게임 오버 시 점수 표시
         ctx.fillStyle = 'black';
         ctx.font = '48px Arial';
         ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
