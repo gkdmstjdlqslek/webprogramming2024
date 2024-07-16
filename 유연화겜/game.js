@@ -3,7 +3,7 @@ const ctx = canvas.getContext('2d');
 
 const scoreElement = document.getElementById('score');
 const timerElement = document.getElementById('timer');
-3
+
 canvas.width = 800;
 canvas.height = 600;
 
@@ -13,7 +13,8 @@ const player = {
     width: 50,
     height: 50,
     speed: 5,
-    isMovingUp: false
+    isMovingUp: false,
+    color: 'green'
 };
 
 const scoreAreas = [
@@ -25,13 +26,15 @@ const scoreAreas = [
 ];
 
 let score = 0;
-let gameTime = 120; // 일단 2분으로 해둠
+let gameTime = 120; // 2 minutes
 let inScoringZone = false;
 let scoringStartTime = 0;
 let gameInterval;
+let restStartTime = 0;
+let isResting = false;
 
 function drawPlayer() {
-    ctx.fillStyle = 'green';
+    ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.width, player.height);
 }
 
@@ -49,6 +52,8 @@ function drawScoreAreas() {
 }
 
 function updateScore() {
+    if (isResting) return;
+
     let isInScoreArea = false;
 
     scoreAreas.forEach(area => {
@@ -60,12 +65,13 @@ function updateScore() {
             } else {
                 const currentTime = new Date().getTime();
                 const elapsedTime = currentTime - scoringStartTime;
-                if (elapsedTime >= 10000) {
+                if (elapsedTime >= 5000) {
                     score += area.score - 10;
                     scoreElement.textContent = 'Score: ' + score;
                     player.isMovingUp = false;
                     player.y = canvas.height - player.height; 
                     inScoringZone = false;
+                    startRestPeriod();
                 }
             }
         }
@@ -76,21 +82,30 @@ function updateScore() {
     }
 }
 
-function updatePlayer() {
-    if (player.isMovingUp) {
+function updatePlayer(){
+    if(isResting) return;
+
+    if(player.isMovingUp) {
         player.y -= player.speed;
-        if (player.y < 0) {
+        if(player.y < 0){
             player.y = 0;
         }
     }
 }
 
+function startRestPeriod() {
+    isResting = true;
+    player.color = 'red';
+    restStartTime = new Date().getTime();
+}
 
-function updatePlayer() {
-    if (player.isMovingUp) {
-        player.y -= player.speed;
-        if (player.y < 0) {
-            player.y = 0;
+function checkRestPeriod() {
+    if (isResting) {
+        const currentTime = new Date().getTime();
+        const elapsedTime = currentTime - restStartTime;
+        if (elapsedTime >= 5000) {
+            isResting = false;
+            player.color = 'green';
         }
     }
 }
@@ -102,6 +117,7 @@ function gameLoop() {
     drawPlayer();
     updatePlayer();
     updateScore();
+    checkRestPeriod();
 
     if (gameTime > 0) {
         gameInterval = requestAnimationFrame(gameLoop);
@@ -119,7 +135,7 @@ function updateTimer() {
         gameTime--;
         const minutes = Math.floor(gameTime / 60).toString().padStart(2, '0');
         const seconds = (gameTime % 60).toString().padStart(2, '0');
-        timerElement.textContent = `${minutes}:${seconds}`;
+        timerElement.textContent = `${minutes} :${seconds}`;
     } else {
         clearInterval(timerInterval);
         cancelAnimationFrame(gameInterval);
@@ -127,7 +143,7 @@ function updateTimer() {
 }
 
 document.addEventListener('keydown', function (e) {
-    if (e.code === 'Space') {
+    if (e.code === 'Space' && !isResting) {
         player.isMovingUp = true;
     }
 });
