@@ -3,7 +3,7 @@ const ctx = canvas.getContext('2d');
 
 const scoreElement = document.getElementById('score');
 const timerElement = document.getElementById('timer');
-
+3
 canvas.width = 800;
 canvas.height = 600;
 
@@ -40,7 +40,7 @@ function drawScoreAreas() {
     ctx.fillStyle = 'black';
 
     scoreAreas.forEach(area => {
-        ctx.fillText(area.score + ' 칸', 10, area.y - 10);
+        ctx.fillText(area.score + ' 점', 10, area.y - 10);
         ctx.beginPath();
         ctx.moveTo(0, area.y);
         ctx.lineTo(canvas.width, area.y);
@@ -49,27 +49,42 @@ function drawScoreAreas() {
 }
 
 function updateScore() {
-    if (player.isMovingUp) {
-        scoreAreas.forEach(area => {
-            if (player.y < area.y + 50 && player.y + player.height > area.y) {
-                if (!inScoringZone) {
-                    inScoringZone = true;
-                    scoringStartTime = new Date().getTime();
-                } else {
-                    const currentTime = new Date().getTime();
-                    const elapsedTime = currentTime - scoringStartTime;
-                    if (elapsedTime >= 10000) {
-                        score += area.score - 10;
-                        scoreElement.textContent = 'Score: ' + score;
-                        player.isMovingUp = false;
-                        player.y = canvas.height - player.height; 
-                        inScoringZone = false;
-                    }
+    let isInScoreArea = false;
+
+    scoreAreas.forEach(area => {
+        if (player.y < area.y + 50 && player.y + player.height > area.y) {
+            isInScoreArea = true;
+            if (!inScoringZone) {
+                inScoringZone = true;
+                scoringStartTime = new Date().getTime();
+            } else {
+                const currentTime = new Date().getTime();
+                const elapsedTime = currentTime - scoringStartTime;
+                if (elapsedTime >= 10000) {
+                    score += area.score - 10;
+                    scoreElement.textContent = 'Score: ' + score;
+                    player.isMovingUp = false;
+                    player.y = canvas.height - player.height; 
+                    inScoringZone = false;
                 }
             }
-        });
+        }
+    });
+
+    if (!isInScoreArea) {
+        player.isMovingUp = false;
     }
 }
+
+function updatePlayer() {
+    if (player.isMovingUp) {
+        player.y -= player.speed;
+        if (player.y < 0) {
+            player.y = 0;
+        }
+    }
+}
+
 
 function updatePlayer() {
     if (player.isMovingUp) {
